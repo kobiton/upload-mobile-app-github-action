@@ -32,7 +32,7 @@ jobs:
     name: Input name for the job
     steps:
       - uses: actions/checkout@v3
-      - uses: kobiton/upload-mobile-app-github-action@<<version>>
+      - uses: kobiton/upload-mobile-app-github-action@v1.0.1
         with:
           kobi_username: ${{ secrets.KOBI_USERNAME }}
           kobi_api_key: ${{ secrets.KOBI_API_KEY }}
