@@ -85,6 +85,8 @@ The result will be shown on GitHub Actions console, and the app/app version will
 
 - You can find the secrets tab in your project's settings
 
+- The action needs `jq` on the runner. GitHub-hosted runners include it; on a self-hosted runner, install it first.
+
 - If you're using the above exact workflow code, keep in mind that it deploys whenever you make a change to the main branch (Even README updates which have nothing to do with application code) and that might not be very efficient for you, have a look through the GitHub Actions documents to customize when the action should trigger.
 
 - When you face any issues with the action, feel free to open an issue for our [GitHub repository](https://github.com/kobiton/upload-mobile-app-github-action/issues)
