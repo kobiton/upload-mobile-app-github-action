@@ -1,26 +1,24 @@
 #!/bin/bash
-set -ex
+set -e
 
 printf "\n=====================================================================================\n"
 printf "KOBITON APP UPLOAD ACTION"
 printf "\n=====================================================================================\n\n"
 
-printf "Installing ack...\n"
-
-sudo chmod 755 /usr/local/bin
-sudo bash -c "curl -L https://beyondgrep.com/ack-v3.5.0 >/usr/local/bin/ack"
-sudo chmod 755 /usr/local/bin/ack
-
-printf "Finish downloading ack\n"
-
-hash ack 2>/dev/null || {
-    echo >&2 "ack required, but it's not installed."
+hash jq 2>/dev/null || {
+    echo >&2 "jq required, but it's not installed."
     exit 1
 }
 
-BASICAUTH=$(echo -n "$KOBI_USERNAME":"$KOBI_API_KEY" | base64)
+json_field() {
+    jq -er ".$1" "$2" || {
+        echo >&2 "No $1 in $2:"
+        cat >&2 "$2"
+        exit 1
+    }
+}
 
-echo "Using Auth: $BASICAUTH"
+BASICAUTH=$(echo -n "$KOBI_USERNAME":"$KOBI_API_KEY" | base64)
 
 if [ -z "$UPLOAD_APP_ID" ]; then
     JSON=("{\"filename\":\"${APP_NAME}.${APP_SUFFIX}\"}")
@@ -37,8 +35,8 @@ curl --silent -X POST https://api.kobiton.com/v1/apps/uploadUrl \
 
 cat ".tmp.upload-url-response.json"
 
-UPLOAD_URL=$(cat ".tmp.upload-url-response.json" | ack -o --match '(?<=url\":")([_\%\&=\?\.aA-zZ0-9:/-]*)')
-KAPPPATH=$(cat ".tmp.upload-url-response.json" | ack -o --match '(?<=appPath\":")([_\%\&=\?\.aA-zZ0-9:/-]*)')
+UPLOAD_URL=$(json_field url ".tmp.upload-url-response.json")
+KAPPPATH=$(json_field appPath ".tmp.upload-url-response.json")
 
 echo "Uploading: ${APP_NAME} (${APP_PATH})"
 echo "URL: ${UPLOAD_URL}"
@@ -61,7 +59,7 @@ curl -X POST https://api.kobiton.com/v1/apps \
 echo "Response:"
 cat ".tmp.upload-app-response.json"
 
-APP_VERSION_ID=$(cat ".tmp.upload-app-response.json" | ack -o --match '(?<=versionId\":)([_\%\&=\?\.aA-zZ0-9:/-]*)')
+APP_VERSION_ID=$(json_field versionId ".tmp.upload-app-response.json")
 
 # Kobiton need some times to update the appId for new appVersion
 sleep 30
@@ -71,7 +69,7 @@ curl -X GET https://api.kobiton.com/v1/app/versions/"$APP_VERSION_ID" \
     -H "Accept: application/json" \
     -o ".tmp.get-appversion-response.json"
 
-UPLOAD_APP_ID=$(cat ".tmp.get-appversion-response.json" | ack -o --match '(?<=appId\":)([_\%\&=\?\.aA-zZ0-9:/-]*)')
+UPLOAD_APP_ID=$(json_field appId ".tmp.get-appversion-response.json")
 
 curl -X PUT https://api.kobiton.com/v1/apps/"$UPLOAD_APP_ID"/"$APP_ACCESS" \
     -H "Authorization: Basic $BASICAUTH"

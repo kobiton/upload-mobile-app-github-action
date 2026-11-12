@@ -32,7 +32,7 @@ jobs:
     name: Input name for the job
     steps:
       - uses: actions/checkout@v3
-      - uses: kobiton/upload-mobile-app-github-action@<<version>>
+      - uses: kobiton/upload-mobile-app-github-action@v1.0.1
         with:
           kobi_username: ${{ secrets.KOBI_USERNAME }}
           kobi_api_key: ${{ secrets.KOBI_API_KEY }}
@@ -84,6 +84,8 @@ The result will be shown on GitHub Actions console, and the app/app version will
 ## Some Notes
 
 - You can find the secrets tab in your project's settings
+
+- The action needs `jq` on the runner. GitHub-hosted runners include it; on a self-hosted runner, install it first.
 
 - If you're using the above exact workflow code, keep in mind that it deploys whenever you make a change to the main branch (Even README updates which have nothing to do with application code) and that might not be very efficient for you, have a look through the GitHub Actions documents to customize when the action should trigger.
 
